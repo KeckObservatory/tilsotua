@@ -13,10 +13,10 @@ panstamps = "*"
 pytest-shutil = "*"
 numpy = "*"
 astroquery = "*"
-regions = "*"
 pyyaml = "*"
 shapely = "*"
 scipy = "*"
+pyransac="*"
 
 [tool.poetry.dev-dependencies]
 
