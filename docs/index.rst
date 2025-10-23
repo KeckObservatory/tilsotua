@@ -12,7 +12,7 @@ This code uses the slit coordinates used with the UCO/Lick milling machine to pr
 
 These final WCS coordinates for the slits are recorded and output to a file, where they can then be used with the archive of LRIS observations.
 
-If you use tilsotua in your work, please cite: 'Sullivan et al. 2025 <https://ui.adsabs.harvard.edu/abs/2025PASP..137e4505S/abstract>'_
+If you use tilsotua in your work, please cite: `Sullivan et al. 2025 <https://ui.adsabs.harvard.edu/abs/2025PASP..137e4505S/abstract>`_
 
 .. toctree::
    :maxdepth: 2
