@@ -76,7 +76,14 @@ def generate_object_cat(obj_file:str, file1:str, xy_map:Table,
     #objcols = ['Name', 'prior', 'Mag', '']
     objects = Table.read(obj_file, format="ascii")
     objects.rename_column('col1', 'Name')
-    file1_tab = Table.read(file1, format="ascii.commented_header", header_start=62)
+    
+    #generate the line information for the autoslit file
+    auto_file = open(file1)
+    content = auto_file.readlines()
+
+    #find the header line in the autoslit file
+    auto_header_start = autoin.lines_that_equal('#  X_STAR    Y_STAR       MIN_Y       MAX_Y    Percent   CCD_X   CCD_Y Prior     Name           Mag  #\n',content)
+    file1_tab = Table.read(file1, format="ascii.commented_header", header_start=auto_header_start[0])
     file1_tab['index'] = np.arange(len(file1_tab))
 
     unique_names = np.unique(file1_tab['Name'])
