@@ -12,6 +12,27 @@ from astropy.time import Time
 import pathlib
 import numpy as np
 
+def lines_that_equal(line_to_match, fp):
+    """
+    Function to search for the lines in a file that match a given string
+    Args:
+        line_to_match: str
+            string to exactly match in set of lines
+
+        fp: str
+            content of lines to search
+
+    Returns:
+        matches: array
+            indices of lines that mactch line_to_match
+    """
+    matches = []
+    for i in range(len(fp)):
+        line = fp[i]
+        if line == line_to_match:
+            matches.append(i)
+    return(matches)
+
 def gen_from_auto(autofile):
     """
     Generate a FITS file similar to the UCO/Lick archival masks from the autoslit
@@ -44,26 +65,6 @@ def gen_from_auto(autofile):
     date = Time.strptime(content[2].split()[4]+' '+content[2].split()[3]+' '+content[2].split()[6],'%d %b %Y')
 
     #read in the X_mask,Y_mask slit positions
-    def lines_that_equal(line_to_match, fp):
-        """
-        Function to search for the lines in a file that match a given string
-        Args:
-            line_to_match: str
-                string to exactly match in set of lines
-
-            fp: str
-                content of lines to search
-
-        Returns:
-            matches: array
-                indices of lines that mactch line_to_match
-        """
-        matches = []
-        for i in range(len(fp)):
-            line = fp[i]
-            if line == line_to_match:
-                matches.append(i)
-        return(matches)
 
     slit_start_text = 'newrow\n'
     slit_start = lines_that_equal(slit_start_text,content)
