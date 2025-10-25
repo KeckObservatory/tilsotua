@@ -422,10 +422,20 @@ def xytowcs(data_input_name:str,output_file:str,
     print('-----------------Calculating Refraction Lookup Table------------------------')
     data = ref.refraction_calc(data,racenter*rpd,deccenter*rpd)
 
+    #update the slit locations to J2000
     temp1 = SkyCoord(ra=data['Calc_RA'], dec=data['Calc_Dec'], unit='deg', frame=FK5, equinox='J'+equ)
     temp_updated = temp1.transform_to(FK5(equinox='J2000'))
     data['Calc_RA'] = temp_updated.ra.deg
     data['Calc_Dec'] = temp_updated.dec.deg
+
+    #update the mask center to J2000 coordinates
+    if equ[0:4] != '2000':
+        print('UPDATED MASK CENTER TO J2000 COORDINATES')
+    temp1 = SkyCoord(ra=hdu['MaskDesign'].data['RA_PNT'], dec=hdu['MaskDesign'].data['DEC_PNT'], unit='deg', frame=FK5, equinox='J'+equ)
+    temp_updated = temp1.transform_to(FK5(equinox='J2000'))
+    hdu['MaskDesign'].data['RA_PNT'] = temp_updated.ra.deg[0]
+    hdu['MaskDesign'].data['DEC_PNT'] = temp_updated.dec.deg[0]
+    hdu['MaskDesign'].data['EQUINPNT'] = '2000.0'  
 
 
     #====================================================================================================================================
