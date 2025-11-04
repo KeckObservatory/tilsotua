@@ -17,7 +17,7 @@ from astropy.io import ascii,fits
 import pyransac
 from pyransac import line2d
 
-def get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccenter,adcuse,filename:str=None):
+def get_shift(data,catalog_keyword,ref_system,log,filename:str=None):
     """
     Queries the selected catalog (Gaia by default) for objects near alignment box centers. Associates the closest
     object to each alignment box, calcualtes the offsets between object positions and alignment box centers,
@@ -75,7 +75,7 @@ def get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccent
     #Step through each slit and calcuate the center of each one by averaging
     i=0
     k =0
-    print('--------------Querying Catalog-------------')
+    log.info('Querying Catalog'.center(50, '-'))
     while i <= len(data)-4:
         #Load in the corners for a given slit in both RA,Dec and x,y and calculate the ratio of the sides
         ra1,ra2,ra3,ra4 = data['Calc_RA'][i],data['Calc_RA'][i+1],data['Calc_RA'][i+2],data['Calc_RA'][i+3]
@@ -103,7 +103,7 @@ def get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccent
             dec_centers.append(dec_avg)
             x_centers.append(x_avg)
             y_centers.append(y_avg)
-            print('ra,dec of box =',ra_avg,dec_avg)
+            log.info(f'ra,dec of box = {ra_avg},{dec_avg}')
 
 #=================================================================================================================================
             #call astroquery with the chosen catalog to gather list of objects in and near the alignment boxes
@@ -135,7 +135,7 @@ def get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccent
                 data['Cat_Obj_RA'][i],data['Cat_Obj_RA'][i+1],data['Cat_Obj_RA'][i+2],data['Cat_Obj_RA'][i+3] = obj[min_diff]['ra'],obj[min_diff]['ra'],obj[min_diff]['ra'],obj[min_diff]['ra']
                 data['Cat_Obj_Dec'][i],data['Cat_Obj_Dec'][i+1],data['Cat_Obj_Dec'][i+2],data['Cat_Obj_Dec'][i+3] = obj[min_diff]['dec'],obj[min_diff]['dec'],obj[min_diff]['dec'],obj[min_diff]['dec']
 
-                print('GAIA object located at:',obj[min_diff]['ra'],obj[min_diff]['dec'])
+                log.info(f"GAIA object located at:{obj[min_diff]['ra']},{obj[min_diff]['dec']}")
                 ra_shifts.append((ra_avg-obj['ra'][min_diff])*np.cos(dec_avg*np.pi/180.))
                 dec_shifts.append(dec_avg-obj['dec'][min_diff])
 
@@ -162,7 +162,7 @@ def get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccent
                 data['Cat_Obj_RA'][i],data['Cat_Obj_RA'][i+1],data['Cat_Obj_RA'][i+2],data['Cat_Obj_RA'][i+3] = obj[min_diff]['raMean'],obj[min_diff]['raMean'],obj[min_diff]['raMean'],obj[min_diff]['raMean']
                 data['Cat_Obj_Dec'][i],data['Cat_Obj_Dec'][i+1],data['Cat_Obj_Dec'][i+2],data['Cat_Obj_Dec'][i+3] = obj[min_diff]['decMean'],obj[min_diff]['decMean'],obj[min_diff]['decMean'],obj[min_diff]['decMean']
 
-                print('PANSTARRS object located at:',obj[min_diff]['raMean'],obj[min_diff]['decMean'])
+                log.info(f"PANSTARRS object located at:{obj[min_diff]['raMean']},{obj[min_diff]['decMean']}")
                 ra_shifts.append((ra_avg-obj['raMean'][min_diff])*np.cos(dec_avg*np.pi/180.))
                 dec_shifts.append(dec_avg-obj['decMean'][min_diff])
 
@@ -184,7 +184,7 @@ def get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccent
                 data['Cat_Obj_RA'][i],data['Cat_Obj_RA'][i+1],data['Cat_Obj_RA'][i+2],data['Cat_Obj_RA'][i+3] = obj[min_diff]['ra'],obj[min_diff]['ra'],obj[min_diff]['ra'],obj[min_diff]['ra']
                 data['Cat_Obj_Dec'][i],data['Cat_Obj_Dec'][i+1],data['Cat_Obj_Dec'][i+2],data['Cat_Obj_Dec'][i+3] = obj[min_diff]['dec'],obj[min_diff]['dec'],obj[min_diff]['dec'],obj[min_diff]['dec']
 
-                print('Custom object located at:',obj[min_diff]['ra'],obj[min_diff]['dec'])
+                log.info("Custom object located at:{obj[min_diff]['ra']},{obj[min_diff]['dec']}")
                 ra_shifts.append((ra_avg-obj['ra'][min_diff])*np.cos(dec_avg*np.pi/180.))
                 dec_shifts.append(dec_avg-obj['dec'][min_diff])
 
@@ -290,15 +290,15 @@ def get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccent
     if total_shift_dispersion >=1.0 or np.isnan(total_shift_final) == True or len(good_ra_shifts)<3:
         ra_shift_final = np.float64(0.0)
         dec_shift_final = np.float64(0.0)
-        print('---------No Systematic Shift Found. No Shift Applied---------')
+        log.info('No Systematic Shift Found. No Shift Applied'.center(50, '-'))
     if 0.70 < total_shift_dispersion/total_shift_final:
         ra_shift_final = np.float64(0.0)
         dec_shift_final = np.float64(0.0)
-        print('---------No Systematic Shift Found. No Shift Applied---------')
+        log.info('No Systematic Shift Found. No Shift Applied'.center(50, '-'))
 
     ra_shifted_centers = ra_centers-ra_shift_final
     dec_shifted_centers = dec_centers-dec_shift_final
-    print('Final Shift:',str(round(total_shift_final,3))+'+/-'+str(round(total_shift_dispersion,3)))
+    log.info(f'Final Shift:{str(round(total_shift_final,3))}+/-{str(round(total_shift_dispersion,3))}')
 
 
     ra_shifted_centers = ra_centers-ra_shift_final
@@ -319,10 +319,10 @@ def get_shift(data,theta,catalog_keyword,output_file,ref_system,racenter,deccent
         dec_diff = 3600*(dec_shifted_centers[g] - catalog_obj_dec[g])
         before_shifts_total[g] = np.sqrt((before_ra_diff)**2+(before_dec_diff)**2)
         after_shifts_total[g] = np.sqrt((ra_diff)**2+(dec_diff)**2)
-    print('Before Shifts:',before_shifts_total)
-    print('After Shifts:',after_shifts_total)
-    print('Before RA Shifts:',before_ra_shifts)
-    print('After RA Shifts:',after_ra_shifts)
+    log.info(f'Before Shifts:{before_shifts_total}')
+    log.info(f'After Shifts:{after_shifts_total}')
+    log.info(f'Before RA Shifts:{before_ra_shifts}')
+    log.info(f'After RA Shifts:{after_ra_shifts}')
 #=================================================================================================================================
 #Shift the slit positions
     data['Calc_RA'] = data['Calc_RA']-ra_shift_final
