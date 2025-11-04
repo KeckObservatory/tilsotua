@@ -27,8 +27,20 @@ from shutil import copyfile
 
 # Keck
 import tilsotua.logger_utils as log_fun
+import configparser
 
 log = log_fun.configure_logger('/kroot/var/log/slitmask/tilsotua/')
+
+
+_config = None  # cache for the config so it’s only read once
+
+def load_config():
+    global _config
+    if _config is None:
+        config = configparser.ConfigParser()
+        config.read('./db_config.live.ini')
+        _config = config['database']
+    return _config
 
 
 def insert_lris_db(data_input_name:str,output_file:str,design_id:int):
@@ -515,14 +527,17 @@ def insert_slitobjmap(object_pairs, desid):
 
     return 1
 
-def get_connected():
-    conn = psycopg2.connect(host="localhost",
-        database="metabase",
-        user="dbadmin",
-        password="slit_mask4u!"
-    )
 
+def get_connected():
+    config = load_config()
+    conn = psycopg2.connect(
+        host=config['host'],
+        database=config['database'],
+        user=config['user'],
+        password=config['password']
+    )
     return conn
+
 
 def close_conn(conn, curse):
     conn.commit()
