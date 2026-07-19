@@ -144,7 +144,7 @@ def refraction_calc(data,racenter,deccenter):
         lat = 19.828 * rpd #keck latitude
         temp = 0
         ra = ra*rpd
-        dec = np.swapaxes(dec*rpd,0,1)
+        dec = np.swapaxes(dec*rpd,0,1).T[0]
         corrections = np.zeros(shape=(len(ra),len(ra)))
     #calculate alt and zenith distance
         for i in range(len(ra)-1):
@@ -180,7 +180,6 @@ def refraction_calc(data,racenter,deccenter):
 
             #calculate correction to RA and Dec
                 DA = R * sinq * rpas/np.cos(dec[i])
-
                 corrections[i,j] = DA*dpr
 
         return(np.swapaxes(corrections,0,1))
@@ -277,7 +276,7 @@ def refraction_calc(data,racenter,deccenter):
         lat = 19.828 * rpd #keck latitude
         temp = 0
         ra = ra*rpd
-        dec = np.swapaxes(dec*rpd,0,1)
+        dec = np.swapaxes(dec*rpd,0,1).T[0]
         corrections = np.zeros(shape=(len(ra),len(ra)))
     #calculate alt and zenith distance
         for i in range(len(dec)-1):
@@ -327,8 +326,11 @@ def refraction_calc(data,racenter,deccenter):
     #call the actual interpolation function
     interp = RegularGridInterpolator((corr_ra_range, corr_dec_range), ref_data,method='linear',bounds_error=True)
     decinterp = RegularGridInterpolator((corr_ra_range,corr_dec_range), dec_ref_data,method='linear',bounds_error=True)
-    for i in range(len(data['Calc_RA'])):
-        data['Calc_RA'][i] -= interp([data['Calc_RA'][i],data['Calc_Dec'][i]])
-        data['Calc_Dec'][i] -= decinterp([data['Calc_RA'][i],data['Calc_Dec'][i]])
+    # for i in range(len(data['Calc_RA'])):
+    #     data['Calc_RA'][i] -= interp([data['Calc_RA'][i],data['Calc_Dec'][i]])
+    #     data['Calc_Dec'][i] -= decinterp([data['Calc_RA'][i],data['Calc_Dec'][i]])
+
+    data['Calc_RA'] -= interp(np.array([data['Calc_RA'], data['Calc_Dec']]).T)
+    data['Calc_Dec'] -= decinterp(np.array([data['Calc_RA'], data['Calc_Dec']]).T)
 
     return(data)

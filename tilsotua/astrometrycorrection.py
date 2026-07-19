@@ -202,13 +202,16 @@ def astrometry_calc(data,ra_center,dec_center):
     ref_data = x_astrometry_correction_calc_grid(x_grid, y_grid)
     y_ref_data = y_astrometry_correction_calc_grid(x_grid,y_grid)
     #call the actual interpolation function
-    interp = RegularGridInterpolator((corr_x_range, corr_y_range), ref_data,method='linear',bounds_error=True)
-    yinterp = RegularGridInterpolator((corr_x_range,corr_y_range), y_ref_data,method='linear',bounds_error=True)
+    interp = RegularGridInterpolator((corr_x_range, corr_y_range), ref_data[:, :, 0],method='linear',bounds_error=True)
+    yinterp = RegularGridInterpolator((corr_x_range,corr_y_range), y_ref_data[:, :, 0],method='linear',bounds_error=True)
 
 #=================================================================================================================================
     #apply the correction to the X,Y slit positions
-    for i in range(len(data['X'])):
-        data['X'][i] -= interp([data['X'][i],data['Y'][i]])
-        data['Y'][i] -= yinterp([data['X'][i],data['Y'][i]])
+    # for i in range(len(data['X'])):
+    #     import pdb; pdb.set_trace()
+    #     data['X'][i] -= interp([data['X'][i],data['Y'][i]])
+    #     data['Y'][i] -= yinterp([data['X'][i],data['Y'][i]])
+    data['X'] -= interp(np.array([data['X'], data['Y']]).T)
+    data['Y'] -= yinterp(np.array([data['X'], data['Y']]).T)
     #return the astropy results table
     return(data)
